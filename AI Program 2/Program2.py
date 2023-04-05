@@ -71,7 +71,7 @@ class Schedule:
 
 
 
-
+# Takes in a list of n differnet schedules, each schedul having 11 activities
 def calculateFitness(schedules):
      # For each activity in each schedule, calculate the fitness
     # Activity fitness starts at 0
@@ -161,6 +161,7 @@ def calculateFitness(schedules):
                     if activity.facilitator == otherActivity.facilitator and activity.time == timeSlots[timeSlots.index(otherActivity.time) - 1]:
                         if building not in otherActivity.room:
                             activity.fitness -= 0.2
+                            otherActivity.fitness -= 0.2
                     
    
             
@@ -223,7 +224,7 @@ def calculateFitness(schedules):
                             activity.fitness += 0.5
                         elif timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) < -4:
                             activity.fitness += 0.5
-                        elif timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) == 0:
+                        else:
                             activity.fitness -= 0.5
             elif "SLA191B" in activity.name:
                 for otherActivity in schedule:
@@ -232,7 +233,7 @@ def calculateFitness(schedules):
                             activity.fitness += 0.5
                         elif timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) < -4:
                             activity.fitness += 0.5
-                        elif timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) == 0:
+                        else:
                             activity.fitness -= 0.5
 
     # If both sections of SLA191 are in the same time slot, subtract 0.5 from the fitness
@@ -249,23 +250,16 @@ def calculateFitness(schedules):
                         if activity.time == otherActivity.time:
                             activity.fitness -= 0.5
 
-    # A section of SLA 191 and a section of SLA100 are overseen in conseutive time (10am and 11am), add 0.5 to the fitness
-    # In this case however if one of the courses is in Roman or Beach and the other isn't subtract 0.4 from the fitness (it's fine if neither are in Roman or Beach)
-    # Do this based off if SLA100 or SLA191 is in the activity name
+    
     
 
     return schedules   
 
 
-
-
-
-# Main Section
-
-if __name__ == "__main__":
+def createSchedules(n):
     # Randomly create 10 differnt schedules that has randomly chosen, room, time, and facilitator, for each activity
     schedules = []
-    for i in range(50):
+    for i in range(n):
         schedule = []
         for name, details in classes.items():
             activity = Activity(name, details["expectedEnrollment"], details["preferredFacilitators"], details["otherFacilitators"])
@@ -274,6 +268,15 @@ if __name__ == "__main__":
             activity.facilitator = random.choice(facilitators)
             schedule.append(activity)
         schedules.append(schedule)
+
+    return schedules
+
+
+# Main Section
+
+if __name__ == "__main__":
+    # Randomly create 10 differnt schedules that has randomly chosen, room, time, and facilitator, for each activity
+    schedules = createSchedules(50)
 
     schedulesWithActivitiesWithFitness = calculateFitness(schedules)
 
@@ -291,10 +294,10 @@ if __name__ == "__main__":
             file.write("\n")
 
 
-
-            # Create a new schedule object where Schedule.activities is a list of activities (inlcude everything in the activity class)
+    
             scheduleObject = Schedule(schedule)
             scheduleObject.fitness = sum([activity.fitness for activity in schedule])
+            print(sum([activity.fitness for activity in schedule]))
             scheduleObjects.append(scheduleObject)
 
     newArray = []
