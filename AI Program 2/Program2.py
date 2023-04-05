@@ -1,4 +1,5 @@
 from scipy.special import softmax
+import numpy as np
 import random
 
 
@@ -60,6 +61,7 @@ class Schedule:
     def __init__(self, activities):
         self.activities = activities
         self.fitness = 0
+        self.probability = 0
 
 
     def __str__(self):
@@ -276,7 +278,7 @@ def createSchedules(n):
 
 if __name__ == "__main__":
     # Randomly create 10 differnt schedules that has randomly chosen, room, time, and facilitator, for each activity
-    schedules = createSchedules(50)
+    schedules = createSchedules(500)
 
     schedulesWithActivitiesWithFitness = calculateFitness(schedules)
 
@@ -287,6 +289,8 @@ if __name__ == "__main__":
 # Write the above write to file statment with out using enumerate
     with open("schedules.txt", "w") as file:
         for schedule in schedulesWithActivitiesWithFitness:
+            # write the number of the schedule
+            file.write("Schedule " + str(schedulesWithActivitiesWithFitness.index(schedule)) + "\n")
             file.write("Schedule Fitness: " + str(sum([activity.fitness for activity in schedule])) + "\n")
             # Also write the schedules activities to the file
             for activity in schedule:
@@ -297,7 +301,6 @@ if __name__ == "__main__":
     
             scheduleObject = Schedule(schedule)
             scheduleObject.fitness = sum([activity.fitness for activity in schedule])
-            print(sum([activity.fitness for activity in schedule]))
             scheduleObjects.append(scheduleObject)
 
     newArray = []
@@ -305,13 +308,68 @@ if __name__ == "__main__":
         newArray.append(schedule.fitness)
 
     proabilityDistro = softmax(newArray)
-    print(proabilityDistro)
+
+
+    # for each schedule object in newArray assign the proabilityDistro value to the schedule object (they are in the same order so it should be fine)
+    for i, schedule in enumerate(newArray):
+        scheduleObjects[i].probability = proabilityDistro[i]
+
+    # Find the numpy median of the proabilityDistro
+    median = np.median(proabilityDistro)
+
+    # Keep all the schedules that have a probabilty greater than the median
+    newScheduleObjects = []
+    for schedule in scheduleObjects:
+        if schedule.probability >= median:
+            newScheduleObjects.append(schedule)
+
+
+    # If the length is less than half of the original length, then add the top x remaining schedules to the newScheduleObjects
+    if len(newScheduleObjects) < len(scheduleObjects) / 2:
+        print(len(newScheduleObjects))
+        x = len(scheduleObjects) / 2 - len(newScheduleObjects)
+        print("Adding top " + str(x) + " schedules")
+        for schedule in sorted(scheduleObjects, key=lambda x: x.probability, reverse=True):
+            if schedule not in newScheduleObjects:
+                newScheduleObjects.append(schedule)
+            if len(newScheduleObjects) == len(scheduleObjects) / 2:
+                break
+
+    # if the lenth is greater than half of the original length, then remove the bottom x schedules from the newScheduleObjects
+    if len(newScheduleObjects) > len(scheduleObjects) / 2:
+        print(len(newScheduleObjects))
+        x = len(newScheduleObjects) - len(scheduleObjects) / 2
+        print("Removing bottom " + str(x) + " schedules")
+        for schedule in sorted(scheduleObjects, key=lambda x: x.probability, reverse=False):
+            if schedule in newScheduleObjects:
+                print(schedule.probability)
+                newScheduleObjects.remove(schedule)
+            if len(newScheduleObjects) <= len(scheduleObjects) / 2:
+                break
+
+         # print the schedules fitness, probability with schedule number
+    for schedule in newScheduleObjects:
+        print("Schedule " + str(scheduleObjects.index(schedule)) + " Fitness: " + str(schedule.fitness) + " Probability: " + str(schedule.probability))
+
+    # print len of newScheduleObjects
+    print(len(newScheduleObjects))            
+
 
 
 
 
     
+    # print(proabilityDistro)
 
+    # # print the max of the proabilityDistro
+    # print(max(proabilityDistro))
+    
+    # # print the index of the max of the proabilityDistro
+    # index = 0
+    # for i, value in enumerate(proabilityDistro):
+    #     if value == max(proabilityDistro):
+    #         index = i
+    # print(index)
 
 
     # # print the schedules fitness and then the activities in each schedule to the console
