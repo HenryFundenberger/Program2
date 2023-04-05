@@ -65,6 +65,10 @@ class Schedule:
     def __str__(self):
         return str(self.fitness)
 
+    def printActivities(self):
+        for activity in self.activities:
+            print(activity)
+
 
 
 
@@ -102,7 +106,7 @@ def calculateFitness(schedules):
     # If an activity is overseen by any other facilitator, subtract 0.1 from the fitness /
     # If the faciliator is scheduled for only 1 activity in the time slot, add 0.2 to the fitness/ 
     # If the facilitator is scheulded for more than 1 activity in the time slot, subtract 0.2 from the fitness / 
-    # If the facilitator is scheuled to oversee more than 4 activities in the day, subtract 0.5 from the fitness
+    # If the facilitator is scheuled to oversee more than 4 activities in the day, subtract 0.5 from the fitness/
     # If the facilitator is schlued to over see 1 or 2 activities (except for Dr Tyler), subtract 0.4 to the fitness
     # If the facilitator has consecutive time slots in Roman / Beach and then in Beach / Roman, subtract 0.2 from the fitness
 
@@ -275,14 +279,17 @@ if __name__ == "__main__":
 
     scheduleObjects = []
 
-    #Ouput to schedules.txt the fitness of each schedule, and activity in each schedule
+
+
+# Write the above write to file statment with out using enumerate
     with open("schedules.txt", "w") as file:
-        for i, schedule in enumerate(schedulesWithActivitiesWithFitness):
-            file.write("Schedule " + str(i) + " Fitness: " + str(sum([activity.fitness for activity in schedule])) + "\n")
+        for schedule in schedulesWithActivitiesWithFitness:
+            file.write("Schedule Fitness: " + str(sum([activity.fitness for activity in schedule])) + "\n")
             # Also write the schedules activities to the file
             for activity in schedule:
                 file.write(str(activity) +  " \n")
             file.write("\n")
+
 
 
             # Create a new schedule object where Schedule.activities is a list of activities (inlcude everything in the activity class)
