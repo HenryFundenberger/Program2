@@ -290,18 +290,18 @@ if __name__ == "__main__":
     with open("schedules.txt", "w") as file:
         for schedule in schedulesWithActivitiesWithFitness:
             # write the number of the schedule
-            file.write("Schedule " + str(schedulesWithActivitiesWithFitness.index(schedule)) + "\n")
+
             file.write("Schedule Fitness: " + str(sum([activity.fitness for activity in schedule])) + "\n")
-            # Also write the schedules activities to the file
             for activity in schedule:
-                file.write(str(activity) +  " \n")
+                file.write(str(activity) + "\n")
+
+
             file.write("\n")
-
-
-    
             scheduleObject = Schedule(schedule)
             scheduleObject.fitness = sum([activity.fitness for activity in schedule])
             scheduleObjects.append(scheduleObject)
+
+
 
     newArray = []
     for schedule in scheduleObjects:
@@ -314,45 +314,33 @@ if __name__ == "__main__":
     for i, schedule in enumerate(newArray):
         scheduleObjects[i].probability = proabilityDistro[i]
 
-    # Find the numpy median of the proabilityDistro
-    median = np.median(proabilityDistro)
-
-    # Keep all the schedules that have a probabilty greater than the median
+    # Keep the top half of the schedules
     newScheduleObjects = []
-    for schedule in scheduleObjects:
-        if schedule.probability >= median:
+    for schedule in sorted(scheduleObjects, key=lambda x: x.probability, reverse=True):
+        if len(newScheduleObjects) < len(scheduleObjects) / 2:
             newScheduleObjects.append(schedule)
+        else:
+            break
 
 
-    # If the length is less than half of the original length, then add the top x remaining schedules to the newScheduleObjects
-    if len(newScheduleObjects) < len(scheduleObjects) / 2:
-        print(len(newScheduleObjects))
-        x = len(scheduleObjects) / 2 - len(newScheduleObjects)
-        print("Adding top " + str(x) + " schedules")
-        for schedule in sorted(scheduleObjects, key=lambda x: x.probability, reverse=True):
-            if schedule not in newScheduleObjects:
-                newScheduleObjects.append(schedule)
-            if len(newScheduleObjects) == len(scheduleObjects) / 2:
-                break
-
-    # if the lenth is greater than half of the original length, then remove the bottom x schedules from the newScheduleObjects
-    if len(newScheduleObjects) > len(scheduleObjects) / 2:
-        print(len(newScheduleObjects))
-        x = len(newScheduleObjects) - len(scheduleObjects) / 2
-        print("Removing bottom " + str(x) + " schedules")
-        for schedule in sorted(scheduleObjects, key=lambda x: x.probability, reverse=False):
-            if schedule in newScheduleObjects:
-                print(schedule.probability)
-                newScheduleObjects.remove(schedule)
-            if len(newScheduleObjects) <= len(scheduleObjects) / 2:
-                break
-
-         # print the schedules fitness, probability with schedule number
+    print("New Schedule Objects")
+    # Print the schedules with their number, fitness, and probability
     for schedule in newScheduleObjects:
-        print("Schedule " + str(scheduleObjects.index(schedule)) + " Fitness: " + str(schedule.fitness) + " Probability: " + str(schedule.probability))
+        print("Schedule " + str(newScheduleObjects.index(schedule)) + " Fitness: " + str(schedule.fitness) + " Probability: " + str(schedule.probability))
+    print(len(newScheduleObjects))
 
-    # print len of newScheduleObjects
-    print(len(newScheduleObjects))            
+    # Output this to schedule.txt
+    with open("schedules2.txt", "w") as file:
+        for schedule in newScheduleObjects:
+            # write the number of the schedule
+            file.write("Schedule " + str(newScheduleObjects.index(schedule)) + "\n")
+            file.write("Schedule Fitness: " + str(schedule.fitness) + "\n")
+            # Also write the schedules activities to the file
+            for activity in schedule.activities:
+                file.write(str(activity) +  " \n")
+            file.write("\n")
+
+
 
 
 
