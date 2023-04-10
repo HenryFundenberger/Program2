@@ -1,6 +1,7 @@
 from scipy.special import softmax
 import numpy as np
 import random
+import time
 
 
 # Data Section
@@ -35,6 +36,8 @@ roomCapacities = {
     "Logos 325": 450,
     "Frank 119": 60
 }
+
+roomList = list(roomCapacities.keys())
 
 
 timeSlots = ['10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM']
@@ -75,187 +78,159 @@ class Schedule:
 
 # Takes in a list of n differnet schedules, each schedul having 11 activities
 def calculateFitness(schedules):
-     # For each activity in each schedule, calculate the fitness
-    # Activity fitness starts at 0
-    # If there are multiple activities in the same room at the same time, subtract 0.5 from the fitness
-
+    # For each schedule
     for schedule in schedules:
+
+        # For each activity in the schedule
         for activity in schedule:
-            for otherActivity in schedule:
-                if activity.room == otherActivity.room and activity.time == otherActivity.time and activity.name != otherActivity.name:
-                    activity.fitness -= 0.5
 
-    # Room Size Section
-    # If the room size is too small for the expected enrollment, subtract 0.5 from the fitness
-    # If there are activities in the room with capatacity > 3 times the expected enrollment, subtract 0.2 from the fitness
-    # IF there are activities in the room with capatcity > 6 times expected enrollment, subtract 0.4 from the fitness
-    # Otherwise add 0.3 to the fitness
+            # Check if the activity is scheduled at the same time as another activity in the same room
+            for activity2 in schedule:
+                if activity != activity2:
+                    if activity.room == activity2.room and activity.time == activity2.time:
+                        activity.fitness -= 0.5
 
-    for schedule in schedules:
+        # Room Size Checks
+        # If a room is too small subtract 0.5 from the fitness
+        # If the room is 3 times more than the expected enrollment subtract 0.2 from the fitness
+        # If the room is 6 times more than the expected enrollment subtract 0.4 from the 
+        # Otherwise add 0.3 to the fitness
         for activity in schedule:
             if roomCapacities[activity.room] < activity.enrollment:
                 activity.fitness -= 0.5
-            elif roomCapacities[activity.room] > 3 * activity.enrollment:
+            elif roomCapacities[activity.room] < activity.enrollment * 3:
                 activity.fitness -= 0.2
-            elif roomCapacities[activity.room] > 6 * activity.enrollment:
+            elif roomCapacities[activity.room] < activity.enrollment * 6:
                 activity.fitness -= 0.4
             else:
                 activity.fitness += 0.3
 
-    # Facilitator Section
-    # If an actvitiy is overseen by a preferred facilitator, add 0.5 to the fitness / 
-    # If an activity is overseen by an other facilitator, add 0.2 to the fitness / 
-    # If an activity is overseen by any other facilitator, subtract 0.1 from the fitness /
-    # If the faciliator is scheduled for only 1 activity in the time slot, add 0.2 to the fitness/ 
-    # If the facilitator is scheulded for more than 1 activity in the time slot, subtract 0.2 from the fitness / 
-    # If the facilitator is scheuled to oversee more than 4 activities in the day, subtract 0.5 from the fitness/
-    # If the facilitator is schlued to over see 1 or 2 activities (except for Dr Tyler), subtract 0.4 to the fitness
-    # If the facilitator has consecutive time slots in Roman / Beach and then in Beach / Roman, subtract 0.2 from the fitness
-
-
-    # For each activity in each schedule, calculate the fitness
-
-    
-    for schedule in schedules:
+        # Facilitaor Checks
+        # If the activity is scheduled with a preferred facilitator add 0.5 to the fitness
+        # If the activity is scheduled with an other facilitator add 0.2 to the fitness
+        # Otherwise subtract 0.1 from the fitness
         for activity in schedule:
-            # If the activity is overseen by a preferred facilitator, add 0.5 to the fitness
             if activity.facilitator in activity.preferredFacilitators:
                 activity.fitness += 0.5
-            # If the activity is overseen by an other facilitator, add 0.2 to the fitness
             elif activity.facilitator in activity.otherFacilitators:
                 activity.fitness += 0.2
-            # If the activity is overseen by any other facilitator, subtract 0.1 from the fitness
             else:
                 activity.fitness -= 0.1
 
-            # If the faciliator is scheduled for only 1 activity in the time slot, add 0.2 to the fitness
-            count = 0
-            for otherActivity in schedule:
-                if activity.facilitator == otherActivity.facilitator and activity.time == otherActivity.time:
-                    count += 1
-            # Ideally we would only have one instance of an activity in a time slot with the same facilitator
-            if count == 1:
+        # Faciliator Load Checks
+        # If the faciliator is scheduled for only 1 activity in the current time slot add 0.2 to the fitness
+        # If the facilitator is scheduled for 2 or more activities in the current time slot subtract 0.2 to the fitness
+        # If the faciliator is overseeing more than 4 activities total subtract 0.5 from the fitness
+        # If the faciliator only has 1 or 2 activities total sub  0.2 to the fitness (Unless the faciliator is Dr. Tyler, no fitness penalty for him)
+        for activity in schedule:
+            # Check if the faciliator is expected to be in many places at one time
+            facilitatorCount = 0
+            for activity2 in schedule:
+                if activity.facilitator == activity2.facilitator and activity.time == activity2.time:
+                    facilitatorCount += 1
+            if facilitatorCount == 1:
                 activity.fitness += 0.2
-            # If the facilitator is scheduled for more than 1 activity in the time slot, subtract 0.2 from the fitness
-            elif count > 1:
+            elif facilitatorCount >= 2:
                 activity.fitness -= 0.2
 
-            # If the facilitator is scheduled to oversee more than 4 activities in the day, subtract 0.5 from the fitness
-            count = 0
-            for otherActivity in schedule:
-                if activity.facilitator == otherActivity.facilitator:
-                    count += 1
-            # If they are scheduled for more than 4 activities, subtract 0.5 from the fitness
-            if count > 4:
+            # Check if the faciliator is overseeing too many activities
+            facilitatorCount = 0
+            for activity2 in schedule:
+                if activity.facilitator == activity2.facilitator:
+                    facilitatorCount += 1
+            if facilitatorCount > 4:
                 activity.fitness -= 0.5
-            # If they are scheduled for 1 or 2 activities (except for Dr Tyler), subtract 0.4 from the fitness
-            elif count == 1 or count == 2:
-                if activity.facilitator != "Tyler":
-                    activity.fitness -= 0.4
+            elif facilitatorCount <= 2 and activity.facilitator != "Tyler":
+                activity.fitness -= 0.2
 
-            # If the facilitator has consecutive time slots in Roman / Beach and then in Beach / Roman, subtract 0.2 from the fitness
-            if "Roman" in activity.room or "Beach" in activity.room:
-                if "Roman" in activity.room:
-                    building = "Roman"
-                else:
-                    building = "Beach"
-                for otherActivity in schedule:
-                    if activity.facilitator == otherActivity.facilitator and activity.time == timeSlots[timeSlots.index(otherActivity.time) - 1]:
-                        if building not in otherActivity.room:
-                            activity.fitness -= 0.2
-                            otherActivity.fitness -= 0.2
-                    
-   
-            
-    
-    # FINISH THIS SECTION
-    # Activity Specific Section
-    # IF the two sections SLA100A and SLA100B are more than 4 hours apart, add 0.5 to the fitness/
-    # IF both sections of SLA100 are in the same time slot, subtract 0.5 from the fitness/
-    # If the two sections of SLA191 are more than 4 hours apart, add 0.5 to the fitness/
-    # If both sections of SLA191 are in the same time slot, subtract 0.5 from the fitness/
-
-    # A section of SLA 191 and a section of SLA100 are overseen in conseutive time (10am and 11am), add 0.5 to the fitness
-    # In this case however if one of the courses is in Roman or Beach and the other isn't subtract 0.4 from the fitness (it's fine if neither are in Roman or Beach)
-    # A section of SLA 191 and a section of SLA 100 are taught separated by 1 hour (10am and 12pm) add 0.25 to the fitness
-    # A section of SLA 191 and a section of SLA 100 are taught in the same time slot subtract 0.25 from the fitness
-
-     # IF the two sections SLA100A and SLA100B are more than 4 hours apart, add 0.5 to the fitness
-    for schedule in schedules:
+        # Activty Specific Checks
+        # If Both Sections SLA100A and SLA100B are scheduled more than 4 hours apart add 0.5 to the fitness
         for activity in schedule:
-            if "SLA100A" in activity.name:
-                for otherActivity in schedule:
-                    if "SLA100B" in otherActivity.name:
-                        if timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) > 4:
+            if activity.name == "SLA100A":
+                for activity2 in schedule:
+                    if activity2.name == "SLA100B":
+                        if abs(timeSlots.index(activity.time) - timeSlots.index(activity2.time)) > 4:
                             activity.fitness += 0.5
-                        elif timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) < -4:
-                            activity.fitness += 0.5
-                        else:
-                            activity.fitness -= 0.5
-            elif "SLA100B" in activity.name:
-                for otherActivity in schedule:
-                    if "SLA100A" in otherActivity.name:
-                        if timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) > 4:
-                            activity.fitness += 0.5
-                        elif timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) < -4:
-                            activity.fitness += 0.5
-                        else:
-                            activity.fitness -= 0.5
-
-    # IF both sections of SLA100 are in the same time slot, subtract 0.5 from the fitness
-    for schedule in schedules:
+                            activity2.fitness += 0.5
+        # If both section sof SLA100A and SLA100B are scheduled at the same time subtract 0.5 from the fitness
         for activity in schedule:
-            if "SLA100A" in activity.name:
-                for otherActivity in schedule:
-                    if "SLA100B" in otherActivity.name:
-                        if activity.time == otherActivity.time:
+            if activity.name == "SLA100A":
+                for activity2 in schedule:
+                    if activity2.name == "SLA100B":
+                        if activity.time == activity2.time:
                             activity.fitness -= 0.5
-            elif "SLA100B" in activity.name:
-                for otherActivity in schedule:
-                    if "SLA100A" in otherActivity.name:
-                        if activity.time == otherActivity.time:
-                            activity.fitness -= 0.5
-
-    # If the two sections of SLA191 are more than 4 hours apart, add 0.5 to the fitness
-    for schedule in schedules:
+                            activity2.fitness -= 0.5
+        # If both sections of SLA191A and SLA191B are scheduled more than 4 hours apart add 0.5 to the fitness
         for activity in schedule:
-            if "SLA191A" in activity.name:
-                for otherActivity in schedule:
-                    if "SLA191B" in otherActivity.name:
-                        if timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) > 4:
+            if activity.name == "SLA191A":
+                for activity2 in schedule:
+                    if activity2.name == "SLA191B":
+                        if abs(timeSlots.index(activity.time) - timeSlots.index(activity2.time)) > 4:
                             activity.fitness += 0.5
-                        elif timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) < -4:
-                            activity.fitness += 0.5
-                        else:
-                            activity.fitness -= 0.5
-            elif "SLA191B" in activity.name:
-                for otherActivity in schedule:
-                    if "SLA191A" in otherActivity.name:
-                        if timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) > 4:
-                            activity.fitness += 0.5
-                        elif timeSlots.index(activity.time) - timeSlots.index(otherActivity.time) < -4:
-                            activity.fitness += 0.5
-                        else:
-                            activity.fitness -= 0.5
+                            activity2.fitness += 0.5
 
-    # If both sections of SLA191 are in the same time slot, subtract 0.5 from the fitness
-    for schedule in schedules:
+        # If both sections of SLA191A and SLA191B are scheduled at the same time subtract 0.5 from the fitness
         for activity in schedule:
-            if "SLA191A" in activity.name:
-                for otherActivity in schedule:
-                    if "SLA191B" in otherActivity.name:
-                        if activity.time == otherActivity.time:
+            if activity.name == "SLA191A":
+                for activity2 in schedule:
+                    if activity2.name == "SLA191B":
+                        if activity.time == activity2.time:
                             activity.fitness -= 0.5
-            elif "SLA191B" in activity.name:
-                for otherActivity in schedule:
-                    if "SLA191A" in otherActivity.name:
-                        if activity.time == otherActivity.time:
-                            activity.fitness -= 0.5
+                            activity2.fitness -= 0.5
+        # If a section of SLA191 Either A or B is scheduled in a consecutive time slot with a section of SLA100A or SLA100B add 0.5 to the fitness
+        # Unless one of the activities is in Roman or Beach and the other is in the opposit if thats the case subtract 0.4 from the fitness instead
+        for activity in schedule:
+            if activity.name == "SLA191A" or activity.name == "SLA191B":
+                for activity2 in schedule:
+                    if activity2.name == "SLA100A" or activity2.name == "SLA100B":
+                        if abs(timeSlots.index(activity.time) - timeSlots.index(activity2.time)) == 1:
+                            if "Roman" in activity.room and "Beach" in activity2.room:
+                                activity.fitness -= 0.4
+                                activity2.fitness -= 0.4
+                            elif "Beach" in activity.room and "Roman" in activity2.room:
+                                activity.fitness -= 0.4
+                                activity2.fitness -= 0.4
+                            else:
+                                activity.fitness += 0.5
+                                activity2.fitness += 0.5
 
-    
-    
+        # Now we need todo the same except with faciliators
+        # If a faciliator is inside Roman or Beach and their next activity is in the opposite room add subtract 0.4 from the fitness
+        for activity in schedule:
+            if "Roman" in activity.room:
+                for activity2 in schedule:
+                    if "Beach" in activity2.room and activity.facilitator == activity2.facilitator:
+                        if abs(timeSlots.index(activity.time) - timeSlots.index(activity2.time)) == 1:
+                            activity.fitness -= 0.4
+                            activity2.fitness -= 0.4
+            elif "Beach" in activity.room:
+                for activity2 in schedule:
+                    if "Roman" in activity2.room and activity.facilitator == activity2.facilitator:
+                        if abs(timeSlots.index(activity.time) - timeSlots.index(activity2.time)) == 1:
+                            activity.fitness -= 0.4
+                            activity2.fitness -= 0.4
+
+        # If a saection of SLA191A/B and a section of SLA100A/B are scheduled with one time in between them add 0.25 to the fitness (meaning activity1 is at 10am and activity2 is at 12pm)
+        for activity in schedule:
+            if activity.name == "SLA191A" or activity.name == "SLA191B":
+                for activity2 in schedule:
+                    if activity2.name == "SLA100A" or activity2.name == "SLA100B":
+                        if abs(timeSlots.index(activity.time) - timeSlots.index(activity2.time)) == 2:
+                            activity.fitness += 0.25
+                            activity2.fitness += 0.25
+
+        # If a section of SLA191A/B and a section of SLA100A/B scheduled in the same time slot subtract 0.25 from the fitness
+        for activity in schedule:
+            if activity.name == "SLA191A" or activity.name == "SLA191B":
+                for activity2 in schedule:
+                    if activity2.name == "SLA100A" or activity2.name == "SLA100B":
+                        if activity.time == activity2.time:
+                            activity.fitness -= 0.25
+                            activity2.fitness -= 0.25
 
     return schedules   
+
+
 
 
 def createSchedules(n):
@@ -285,33 +260,27 @@ if __name__ == "__main__":
     scheduleObjects = []
 
 
-
-# Write the above write to file statment with out using enumerate
-    with open("schedules.txt", "w") as file:
-        for schedule in schedulesWithActivitiesWithFitness:
-            # write the number of the schedule
-
-            file.write("Schedule Fitness: " + str(sum([activity.fitness for activity in schedule])) + "\n")
-            for activity in schedule:
-                file.write(str(activity) + "\n")
-
-
-            file.write("\n")
-            scheduleObject = Schedule(schedule)
-            scheduleObject.fitness = sum([activity.fitness for activity in schedule])
-            scheduleObjects.append(scheduleObject)
+    
+    for schedule in schedulesWithActivitiesWithFitness:
+        scheduleObject = Schedule(schedule)
+        scheduleObject.fitness = sum([activity.fitness for activity in schedule])
+        scheduleObjects.append(scheduleObject)
 
 
 
-    newArray = []
+
+
+    calcProbOfSchedules = []
     for schedule in scheduleObjects:
-        newArray.append(schedule.fitness)
+        calcProbOfSchedules.append(schedule.fitness)
 
-    proabilityDistro = softmax(newArray)
+    
+
+    proabilityDistro = softmax(calcProbOfSchedules)
 
 
     # for each schedule object in newArray assign the proabilityDistro value to the schedule object (they are in the same order so it should be fine)
-    for i, schedule in enumerate(newArray):
+    for i, schedule in enumerate(calcProbOfSchedules):
         scheduleObjects[i].probability = proabilityDistro[i]
 
     # Keep the top half of the schedules
@@ -323,79 +292,124 @@ if __name__ == "__main__":
             break
 
 
-    print("New Schedule Objects")
-    # Print the schedules with their number, fitness, and probability
-    for schedule in newScheduleObjects:
-        print("Schedule " + str(newScheduleObjects.index(schedule)) + " Fitness: " + str(schedule.fitness) + " Probability: " + str(schedule.probability))
-    print(len(newScheduleObjects))
-
-    # Output this to schedule.txt
-    with open("schedules2.txt", "w") as file:
-        for schedule in newScheduleObjects:
-            # write the number of the schedule
-            file.write("Schedule " + str(newScheduleObjects.index(schedule)) + "\n")
-            file.write("Schedule Fitness: " + str(schedule.fitness) + "\n")
-            # Also write the schedules activities to the file
-            for activity in schedule.activities:
-                file.write(str(activity) +  " \n")
-            file.write("\n")
-
-
-
-
-
 
 
     
-    # print(proabilityDistro)
-
-    # # print the max of the proabilityDistro
-    # print(max(proabilityDistro))
-    
-    # # print the index of the max of the proabilityDistro
-    # index = 0
-    # for i, value in enumerate(proabilityDistro):
-    #     if value == max(proabilityDistro):
-    #         index = i
-    # print(index)
-
-
-    # # print the schedules fitness and then the activities in each schedule to the console
-    # for i, schedule in enumerate(sorted(scheduleObjects, key=lambda x: x.fitness, reverse=True)[:10]):
-    #     print("Schedule " + str(i) + " Fitness: " + str(schedule.fitness))
-    #     for activity in schedule.activities:
-    #         print(activity.name, activity.room, activity.time, activity.facilitator, activity.fitness)
-    #     print()
-    # print('=' * 50)
-    
+    currentOptions = newScheduleObjects
+    generatedSchedules = []
 
     
 
+    # Now that we have the top half of the schedules, it's time to start the genetic algorithm
+    # We will do this by randomly selecting two schedules from the top half and randomly selecting a number between 1 and the number of activities in a schedule (in this case each schedule has 11 activities)
+    # We will take schedule 1 (parent 1) and schedule 2 (parent 2) and create a new schedule (child) by taking the first random number of activities from parent 1 and the rest of the activities from parent 2
+    # We will then take schedule2 (parent 1) and schedule 1 (parent 2) and create a new schedule (child) by taking the first random number of activities from parent 1 and the rest of the activities from parent 2
+    # We will set the scheulde.fitnes to 0 and for each activity in the schedule, set the activity.fitness to 0
+    # Then for each activity in the schedule, we will calculate the fitness of the activity (we do this by passing the whole list of activities of the schedule to the calculateFitness function)
+    # We will then add the schedule to the generatedSchedules list
+    # We will do this until currentOptions is empty, and then restart the process by keeping the top half of the generatedSchedules list and repeating the process 100 times
+    # We will then take the top 10 schedules and print them to the console
+    mutationRate = 100
+    improvement_threshold = 0.001
+    improvement = 1
+    generatedSchedules = []
+    G100 = 0
+
+    best_fitness = 0
+    last_improvement_gen = 0
+    i = 0
+    while improvement_threshold < improvement:
+        i += 1
+        
+        print("Generation: " + str(i))
+        if i % 10 == 0:
+            mutationRate += 10
+        for j in range(len(currentOptions) // 2):
+            parent1 = random.choice(currentOptions)
+            while True:
+                parent2 = random.choice(currentOptions)
+                if parent1 != parent2:
+                    break
+
+            # reset fitness
+            for activity in parent1.activities + parent2.activities:
+                activity.fitness = 0
+            parent1.fitness = 0
+            parent2.fitness = 0
+
+            breakPoint = random.randint(1, len(parent1.activities))
+
+            child1 = Schedule(parent1.activities[:breakPoint] + parent2.activities[breakPoint:])
+            child2 = Schedule(parent2.activities[:breakPoint] + parent1.activities[breakPoint:])
+
+            for activity in child1.activities + child2.activities:
+                activity.fitness = 0
+            child1.fitness = 0
+            child2.fitness = 0
+
+            # mutate with a 1% chance
+            if random.randint(0, mutationRate) == 1:
+                for schedule in [parent1, parent2, child1, child2]:
+                    for activity in schedule.activities:
+                        if random.randint(0, mutationRate) == 1:
+                            activity.room = random.choice(list(roomCapacities.keys()))
+                            activity.time = random.choice(timeSlots)
+                            activity.facilitator = random.choice(facilitators)
+                            activity.fitness = 0
+
+            # calculate fitness of the activities in child1 and child2 schedules
+            child1.fitness = sum([activity.fitness for activity in calculateFitness([child1.activities])[0]])
+            child2.fitness = sum([activity.fitness for activity in calculateFitness([child2.activities])[0]])
+
+            # calculate fitness of the activities in parent1 and parent2 schedules
+            parent1.fitness = sum([activity.fitness for activity in calculateFitness([parent1.activities])[0]])
+            parent2.fitness = sum([activity.fitness for activity in calculateFitness([parent2.activities])[0]])
+
+            # add schedules to the generatedSchedules list
+            generatedSchedules.append(child1)
+            generatedSchedules.append(child2)
+            generatedSchedules.append(parent1)
+            generatedSchedules.append(parent2)
+
+            # remove parent1 and parent2 schedules from the currentOptions list
+            currentOptions.remove(parent1)
+            currentOptions.remove(parent2)
+
+        # set currentOptions list to the top half of the generatedSchedules list
+        currentOptions = sorted(generatedSchedules, key=lambda x: x.fitness, reverse=True)
+        currentOptions = currentOptions[:len(currentOptions) // 2]
+        # clear generatedSchedules list
+        generatedSchedules = []
 
 
+        if i > 100:
+            if i == 100:
+                G100 = currentOptions[0].fitness
+        # check for improvement
+            current_fitness = currentOptions[0].fitness
+            improvement = (best_fitness - current_fitness) / best_fitness if best_fitness != 0 else 1
+            if improvement < improvement_threshold:
+                last_improvement_gen += 1
+            else:
+                best_fitness = current_fitness
+                last_improvement_gen = 0
 
+            if last_improvement_gen > 50:
+                print(f"No improvement for {last_improvement_gen} generations. Stopping.")
+                break
+        else:
+            continue
 
-# # OPtional stuff Uncomment to enable
-#  #print the 10 best schedules
-#     for i, schedule in enumerate(sorted(schedulesWithActivitiesWithFitness, key=lambda x: sum([activity.fitness for activity in x]), reverse=True)[:10]):
-#         sum = 0
-#         for activity in schedule:
-#             sum += activity.fitness
-#         print("Schedule " + str(i) + " Fitness: " + str(sum))
-#         for activity in schedule:
-#             print(activity.name, activity.room, activity.time, activity.facilitator, activity.fitness)
-#         print()
-#     print('=' * 50)
-#    # print all schedule objects
-#     for schedule in scheduleObjects:
-#         print(schedule)
-#         # print the activities in each schedule
-#         for element in schedule.activities:
-#             print(element)
-#         print()
+        with open('bestSchedule.txt', 'w') as f:
+            # write the overall best schedule fitness to the file
+            f.write(f"Schedule Fitness: {currentOptions[0].fitness} \n")
+            # write the activities in the schedule to the file in the same order as timeSlots
+            for timeSlot in timeSlots:
+                for activity in currentOptions[0].activities:
+                    if activity.time == timeSlot:
+                        f.write(f"{activity.name} - {activity.room} - {activity.facilitator} - {activity.time} \n")
 
-#     # Create a probability distribution based on the fitness of each schedule
-#     # The higher the fitness the higher the probability
-#     # The lower the fitness the lower the probability
-#     # Each Schedule object has the sum of the fitness of all the activities in the schedule
+print("Program finished")
 
+  
+   

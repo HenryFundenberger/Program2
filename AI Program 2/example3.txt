@@ -1,0 +1,12 @@
+Schedule Fitness: 19.2 
+SLA100B - Loft 310 - Uther - 10 AM 
+SLA100A - Beach 301 - Glen - 11 AM 
+SLA191B - Frank 119 - Banks - 11 AM 
+SLA303 - Loft 310 - Banks - 12 PM 
+SLA394 - Roman 216 - Singer - 12 PM 
+SLA451 - Loft 206 - Tyler - 12 PM 
+SLA191A - Frank 119 - Singer - 1 PM 
+SLA291 - Logos 325 - Shaw - 2 PM 
+SLA304 - Roman 216 - Banks - 2 PM 
+SLA201 - Frank 119 - Shaw - 3 PM 
+SLA449 - Logos 325 - Singer - 3 PM 

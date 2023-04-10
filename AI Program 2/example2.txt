@@ -1,0 +1,12 @@
+Schedule Fitness: 25.2 
+SLA291 - Roman 201 - Banks - 10 AM 
+SLA304 - Frank 119 - Singer - 10 AM 
+SLA191B - Logos 325 - Numen - 11 AM 
+SLA100A - Loft 310 - Glen - 12 PM 
+SLA191A - Roman 201 - Numen - 1 PM 
+SLA100B - Frank 119 - Uther - 2 PM 
+SLA303 - Loft 310 - Zeldin - 2 PM 
+SLA394 - Roman 216 - Singer - 2 PM 
+SLA451 - Slater 003 - Tyler - 2 PM 
+SLA201 - Beach 201 - Banks - 3 PM 
+SLA449 - Logos 325 - Singer - 3 PM 
