@@ -1,0 +1,12 @@
+Schedule Fitness: 12.499999999999991 
+SLA394 - Roman 201 - Tyler - 10 AM 
+SLA303 - Beach 201 - Zeldin - 11 AM 
+SLA100A - Frank 119 - Zeldin - 12 PM 
+SLA191A - Frank 119 - Lock - 1 PM 
+SLA191B - Beach 301 - Zeldin - 1 PM 
+SLA451 - Loft 310 - Tyler - 1 PM 
+SLA100B - Loft 310 - Lock - 2 PM 
+SLA304 - Beach 301 - Tyler - 2 PM 
+SLA201 - Roman 201 - Zeldin - 3 PM 
+SLA291 - Frank 119 - Lock - 3 PM 
+SLA449 - Beach 301 - Tyler - 3 PM 
