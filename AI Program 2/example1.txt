@@ -1,0 +1,12 @@
+Schedule Fitness: 12.499999999999991 
+SLA191B - Frank 119 - Banks - 10 AM 
+SLA201 - Beach 201 - Zeldin - 10 AM 
+SLA100A - Beach 301 - Zeldin - 11 AM 
+SLA100B - Roman 201 - Banks - 11 AM 
+SLA451 - Loft 310 - Singer - 11 AM 
+SLA191A - Frank 119 - Zeldin - 12 PM 
+SLA449 - Loft 206 - Tyler - 1 PM 
+SLA291 - Roman 201 - Singer - 2 PM 
+SLA303 - Loft 310 - Banks - 2 PM 
+SLA304 - Roman 201 - Banks - 3 PM 
+SLA394 - Frank 119 - Singer - 3 PM 

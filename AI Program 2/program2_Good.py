@@ -281,12 +281,14 @@ i = 0
 # The genectic algorithm will have a population of n schedules ( which will be half of the total number of schedules created in the beginning, i.e if we make 500 schedules at the start we pass 250 schedules to the genetic algorithm)
 # The genetic alogrithm will make children out of two random parents, then will have a 1% chance of mutation (i.e. a random activity will be changed, either the time, room or facilitator (use the facilitator list not the preferred facilitator list or the other facilitator list)))
 # We will do this 100 times
+print("Starting Genetic Algorithm")
 while True:
     i += 1
-    if i % 5 == 0:
+    if i % 10 == 0:
+        print("Generation: " + str(i))
+    if i % 3 == 0:
         mutationRate *= 2
     schedulesToGoThrough = initialSchedules[:]
-    print("Generation: " + str(i))
     # Make children
     children = []
     usedParents = []
@@ -310,16 +312,21 @@ while True:
         usedParents.append(parent1)
         usedParents.append(parent2)
 
+
     # Calculate the fitness of the children
     for schedule in children:
         schedule.fitness = calcFitnes(schedule)
+    
+
     # Calculate the fitness of the parents
     for schedule in initialSchedules:
         schedule.fitness = calcFitnes(schedule)
-    # Print max fitness of initial schedules
+
 
     # Add the children to the list of schedules
     initialSchedules += children
+
+
     # Calculate the fitness of the children
     # Sort the schedules by fitness
     initialSchedules.sort(key=lambda x: x.fitness, reverse=True)
@@ -327,13 +334,34 @@ while True:
 
     # Remove the best half of the schedules
     initialSchedules = initialSchedules[:len(initialSchedules)//2]
-
     if i == 100:
-        break
+        j = 0
+        softMaxList = []
+        for schedule in initialSchedules:
+            softMaxList.append(schedule.fitness)
+
+        probDistro = softmax(softMaxList)
+        G100 = probDistro
+    if i >= 100:
+        
+        j = 0
+        softMaxList = []
+        for schedule in initialSchedules:
+            softMaxList.append(schedule.fitness)
+
+        probDistro = softmax(softMaxList)
+        GN = probDistro
+
+        # If current best schedule is within 1% of the best schedule from gen 100, stop the genetic algorithm
+        if abs(sum(GN) - sum(G100)) / len(G100) < 0.01:
+            break
 
 
 
 
+
+
+print("Genetic Algorithm Finished")
 with open('bestSchedule.txt', 'w') as f:
     # write the overall best schedule fitness to the file
     f.write(f"Schedule Fitness: {initialSchedules[0].fitness} \n")
