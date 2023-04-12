@@ -2,7 +2,6 @@ from scipy.special import softmax
 import numpy as np
 import random
 import time
-import matplotlib.pyplot as plt
 mutationRate = 100
 
 facilitators = ["Lock", "Glen", "Banks", "Richards", "Shaw", "Singer", "Uther", "Tyler", "Numen", "Zeldin"]
