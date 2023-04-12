@@ -1,0 +1,12 @@
+Schedule Fitness: 12.299999999999992 
+SLA191B - Frank 119 - Glen - 10 AM 
+SLA201 - Loft 206 - Zeldin - 10 AM 
+SLA100B - Frank 119 - Banks - 11 AM 
+SLA291 - Beach 301 - Zeldin - 11 AM 
+SLA451 - Loft 310 - Tyler - 12 PM 
+SLA303 - Loft 310 - Glen - 1 PM 
+SLA100A - Roman 201 - Glen - 2 PM 
+SLA394 - Frank 119 - Tyler - 2 PM 
+SLA191A - Loft 206 - Zeldin - 3 PM 
+SLA304 - Frank 119 - Glen - 3 PM 
+SLA449 - Beach 201 - Tyler - 3 PM 

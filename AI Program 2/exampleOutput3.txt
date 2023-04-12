@@ -1,0 +1,12 @@
+Schedule Fitness: 12.499999999999991 
+SLA100B - Loft 206 - Glen - 10 AM 
+SLA291 - Beach 201 - Lock - 10 AM 
+SLA191B - Beach 301 - Lock - 11 AM 
+SLA201 - Frank 119 - Glen - 11 AM 
+SLA451 - Loft 310 - Tyler - 11 AM 
+SLA100A - Loft 310 - Lock - 12 PM 
+SLA191A - Roman 201 - Lock - 1 PM 
+SLA304 - Slater 003 - Glen - 1 PM 
+SLA449 - Beach 201 - Tyler - 1 PM 
+SLA303 - Beach 201 - Glen - 2 PM 
+SLA394 - Frank 119 - Tyler - 3 PM 
