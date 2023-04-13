@@ -39,7 +39,8 @@ roomList = list(roomCapacities.keys())
 
 timeSlots = ['10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM']
 
-
+# A class to represent an activity
+# And hold spcific information about the activity
 class Activity:
     def __init__(self, name, expected, preferredFacilitators, otherFacilitators):
         self.name = name
@@ -55,7 +56,8 @@ class Activity:
         return self.name + " " + self.room + " " + self.time + " " + self.facilitator + " " + str(self.fitness)
 
 
-
+# A class to represent a schedule
+# And hold spcific information about the schedule
 class Schedule:
     def __init__(self, activities = []):
         self.activities = activities
@@ -79,9 +81,8 @@ class Schedule:
         self.activities == other.activities
         self.fitness == other.fitness
 
-
+# Random Schedule Generator
 def createSchedules(n):
-    # Randomly create 10 differnt schedules that has randomly chosen, room, time, and facilitator, for each activity
     schedules = []
     for i in range(n):
         schedule = []
@@ -97,7 +98,7 @@ def createSchedules(n):
 
     return schedules
 
-
+# Takes in a singular schedule and calculates the fitness for it
 def calcFitnes(schedule):
     # Sechedule is an indivudal shcedule object
     # We can access the activities in the schedule by using schedule.activities
@@ -224,14 +225,8 @@ def calcFitnes(schedule):
 
 
     return fitness
-
+# Mutate function takes in a singular schedule and mutates a random part of a single activity
 def mutate(schedule):
-    # Choose a random activity from schedule.activites 
-    # Choose to either change the time, room, or facilitator
-    # Only change that one thing
-    # There shoudl only be a 1% chance of mutation
-    # If there is a mutation, return the mutated schedule
-    # If there is no mutation, return the original schedule
     if random.randint(0, mutationRate) == 1:
         activity = random.choice(schedule.activities)
         if random.randint(0, 2) == 0:
@@ -245,7 +240,7 @@ def mutate(schedule):
 
     
 
-
+# Crossover function takes in two schedules and creates two new schedules by swapping random parts of the schedules
 def crossover(schedule1, schedule2):
     # Choose a random index
     breakPoint = random.randint(0, len(schedule1.activities) - 1)
@@ -258,115 +253,119 @@ def crossover(schedule1, schedule2):
     return child1, child2 
 
 
-initialActivities = createSchedules(500)
-initialSchedules = []
-for activity in initialActivities:
-    s = Schedule(activity)
-    initialSchedules.append(s)
 
-for schedule in initialSchedules:
-    schedule.fitness = calcFitnes(schedule)
-
-
-
-# Keep the best half of the schedules
-initialSchedules.sort(key=lambda x: x.fitness, reverse=True)
-initialSchedules = initialSchedules[:len(initialSchedules)//2]
-
-
-improveThreshold = 0.01
-i = 0
-# We are going to have a genetic algorithm that will try to find the best schedule
-# The genectic algorithm will have a population of n schedules ( which will be half of the total number of schedules created in the beginning, i.e if we make 500 schedules at the start we pass 250 schedules to the genetic algorithm)
-# The genetic alogrithm will make children out of two random parents, then will have a 1% chance of mutation (i.e. a random activity will be changed, either the time, room or facilitator (use the facilitator list not the preferred facilitator list or the other facilitator list)))
-# We will do this 100 times
-print("Starting Genetic Algorithm")
-while True:
-    i += 1
-    if i % 10 == 0:
-        print("Generation: " + str(i))
-    if i % 3 == 0:
-        mutationRate *= 2
-    schedulesToGoThrough = initialSchedules[:]
-    # Make children
-    children = []
-    usedParents = []
-    for j in range(len(initialSchedules)//2):
-        # Choose two random parents
-        parent1 = random.choice(schedulesToGoThrough[:])
-        schedulesToGoThrough.remove(parent1)
-        parent2 = random.choice(schedulesToGoThrough[:])
-        schedulesToGoThrough.remove(parent2)
-        # Make children out of the parents
-        child1, child2 = crossover(parent1, parent2)
-        # Mutate the children / parents
-        child1 = mutate(child1)
-        child2 = mutate(child2)
-        parent1 = mutate(parent1)
-        parent2 = mutate(parent2)
-
-        # Add the children to the list of children
-        children.append(child1)
-        children.append(child2)
-        usedParents.append(parent1)
-        usedParents.append(parent2)
-
-
-    # Calculate the fitness of the children
-    for schedule in children:
-        schedule.fitness = calcFitnes(schedule)
-    
-
-    # Calculate the fitness of the parents
+if __name__ == "__main__":
+     # Generates initial 500 schedules
+    initialActivities = createSchedules(500)
+    initialSchedules = []
+    for activity in initialActivities:
+        s = Schedule(activity)
+        initialSchedules.append(s)
+    # Calculate the fitness of each schedule
+    # Sum of all the activities fitness
     for schedule in initialSchedules:
         schedule.fitness = calcFitnes(schedule)
 
 
-    # Add the children to the list of schedules
-    initialSchedules += children
 
-
-    # Calculate the fitness of the children
-    # Sort the schedules by fitness
+    # Keep the best half of the schedules
     initialSchedules.sort(key=lambda x: x.fitness, reverse=True)
-    # Print the best fitness
-
-    # Remove the best half of the schedules
     initialSchedules = initialSchedules[:len(initialSchedules)//2]
-    if i == 100:
-        j = 0
-        softMaxList = []
-        for schedule in initialSchedules:
-            softMaxList.append(schedule.fitness)
 
-        probDistro = softmax(softMaxList)
-        G100 = probDistro
-    if i >= 100:
+
+    i = 0
+    # We are going to have a genetic algorithm that will try to find the best schedule
+    # The genectic algorithm will have a population of n schedules ( which will be half of the total number of schedules created in the beginning, i.e if we make 500 schedules at the start we pass 250 schedules to the genetic algorithm)
+    # The genetic alogrithm will make children out of two random parents, then will have a 1% chance of mutation (i.e. a random activity will be changed, either the time, room or facilitator (use the facilitator list not the preferred facilitator list or the other facilitator list)))
+    # We will do this at least 100 times
+    print("Starting Genetic Algorithm")
+    while True:
+        i += 1
+        if i % 10 == 0:
+            print("Generation: " + str(i))
+        if i % 3 == 0:
+            mutationRate *= 2
+        schedulesToGoThrough = initialSchedules[:]
+        # Make children
+        children = []
+        usedParents = []
+        for j in range(len(initialSchedules)//2):
+            # Choose two random parents
+            parent1 = random.choice(schedulesToGoThrough[:])
+            schedulesToGoThrough.remove(parent1)
+            parent2 = random.choice(schedulesToGoThrough[:])
+            schedulesToGoThrough.remove(parent2)
+            # Make children out of the parents
+            child1, child2 = crossover(parent1, parent2)
+            # Mutate the children / parents
+            child1 = mutate(child1)
+            child2 = mutate(child2)
+            parent1 = mutate(parent1)
+            parent2 = mutate(parent2)
+
+            # Add the children to the list of children
+            children.append(child1)
+            children.append(child2)
+            usedParents.append(parent1)
+            usedParents.append(parent2)
+
+
+        # Calculate the fitness of the children
+        for schedule in children:
+            schedule.fitness = calcFitnes(schedule)
         
-        j = 0
-        softMaxList = []
+
+        # Calculate the fitness of the parents
         for schedule in initialSchedules:
-            softMaxList.append(schedule.fitness)
-
-        probDistro = softmax(softMaxList)
-        GN = probDistro
-
-        # If current best schedule is within 1% of the best schedule from gen 100, stop the genetic algorithm
-        if abs(sum(GN) - sum(G100)) / len(G100) < 0.01:
-            break
+            schedule.fitness = calcFitnes(schedule)
 
 
+        # Add the children to the list of schedules
+        initialSchedules += children
 
 
+        # Calculate the fitness of the children
+        # Sort the schedules by fitness
+        initialSchedules.sort(key=lambda x: x.fitness, reverse=True)
+        # Print the best fitness
 
+        # Remove the best half of the schedules
+        initialSchedules = initialSchedules[:len(initialSchedules)//2]
 
-print("Genetic Algorithm Finished")
-with open('bestSchedule.txt', 'w') as f:
-    # write the overall best schedule fitness to the file
-    f.write(f"Schedule Fitness: {initialSchedules[0].fitness} \n")
-    # write the activities in the schedule to the file in the same order as timeSlots
-    for timeSlot in timeSlots:
-        for activity in initialSchedules[0].activities:
-            if activity.time == timeSlot:
-                f.write(f"{activity.name} - {activity.room} - {activity.facilitator} - {activity.time} \n")
+        # After 100 generations, save the best schedule fitness
+        # We do this by saving the probability distribution of the fitness of the schedules
+        if i == 100:
+            j = 0
+            softMaxList = []
+            for schedule in initialSchedules:
+                softMaxList.append(schedule.fitness)
+
+            probDistro = softmax(softMaxList)
+            G100 = probDistro
+        # Every iteration after 100, save the probability distribution of the fitness of the schedules
+        # And see if the current best schedule is within 1% of the best schedule from gen 100
+        if i >= 100:
+            
+            j = 0
+            softMaxList = []
+            for schedule in initialSchedules:
+                softMaxList.append(schedule.fitness)
+
+            probDistro = softmax(softMaxList)
+            GN = probDistro
+
+            # If current best schedule is within 1% of the best schedule from gen 100, stop the genetic algorithm
+            if abs(sum(GN) - sum(G100)) / len(G100) < 0.01:
+                break
+
+    # Output the best schedule to a file organized by time
+    print("Genetic Algorithm Finished")
+    with open('bestSchedule.txt', 'w') as f:
+        # write the overall best schedule fitness to the file
+        f.write(f"Schedule Fitness: {initialSchedules[0].fitness} \n")
+        # write the activities in the schedule to the file in the same order as timeSlots
+        for timeSlot in timeSlots:
+            for activity in initialSchedules[0].activities:
+                if activity.time == timeSlot:
+                    f.write(f"{activity.name} - {activity.room} - {activity.facilitator} - {activity.time} \n")
 

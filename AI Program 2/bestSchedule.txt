@@ -1,12 +1,12 @@
-Schedule Fitness: 12.249999999999991 
-SLA100A - Loft 206 - Zeldin - 10 AM 
-SLA291 - Beach 301 - Singer - 10 AM 
-SLA191B - Frank 119 - Zeldin - 11 AM 
-SLA304 - Slater 003 - Banks - 11 AM 
-SLA191A - Frank 119 - Zeldin - 12 PM 
-SLA303 - Loft 206 - Banks - 12 PM 
-SLA394 - Beach 201 - Singer - 12 PM 
-SLA451 - Loft 310 - Singer - 1 PM 
-SLA100B - Loft 310 - Zeldin - 3 PM 
-SLA201 - Frank 119 - Banks - 3 PM 
-SLA449 - Loft 206 - Singer - 3 PM 
+Schedule Fitness: 12.299999999999992 
+SLA100A - Beach 301 - Lock - 10 AM 
+SLA201 - Loft 206 - Zeldin - 10 AM 
+SLA304 - Beach 201 - Tyler - 10 AM 
+SLA191A - Loft 206 - Lock - 11 AM 
+SLA303 - Beach 201 - Glen - 12 PM 
+SLA394 - Slater 003 - Tyler - 12 PM 
+SLA191B - Frank 119 - Glen - 2 PM 
+SLA449 - Loft 206 - Tyler - 2 PM 
+SLA100B - Beach 201 - Glen - 3 PM 
+SLA291 - Loft 206 - Lock - 3 PM 
+SLA451 - Loft 310 - Tyler - 3 PM 
